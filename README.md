@@ -1,6 +1,6 @@
 Simple app illustrating [geojson](https://en.wikipedia.org/wiki/GeoJSON) data format and [Leaflet.js](http://leafletjs.com) mapping library.
 
-How run (node.js required)
+How to run (node.js required)
 ```
 # git clone https://github.com/openbeta-io/geojson-poc.git
 # cd geojson-poc
