@@ -6,7 +6,8 @@ How run (node.js required)
 # cd geojson-poc
 # npm install
 # node app.js
+```
+View the app in your browser at http://localhost:8080 
 
-Open http://localhost:8080 
-
-Screen capture
+Screenshot
+![screen shot](geojson.png)
