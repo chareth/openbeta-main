@@ -9,7 +9,7 @@ How to run (node.js required)
 ```
 View the app in your browser at http://localhost:8080 
 
-Live demo coming soon!
+Live [demo!](http://demo-openbeta1.rhcloud.com)
 
 Screenshot
 ![screen shot](geojson.png)
