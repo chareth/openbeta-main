@@ -2,12 +2,16 @@
   "name": "geojson",
   "version": "1.0.0",
   "description": "Geojson and Leafjs proof of concept",
-  "main": "index.html",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
   "author": "Viet Nguyen",
   "license": "GPL-2.0",
+  "repository": {
+     "type": "git",
+     "url": "https://github.com/openbeta-io/geojson-poc"
+  },
   "dependencies": {
     "cors": "^2.7.1",
     "express": "^4.13.4"
