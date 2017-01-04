@@ -4,7 +4,10 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "Yin and Yang"
+        "name": "Yin and Yang",
+        "metadata": {
+            "isTopLevel": "False"
+        }
       },
       "geometry": {
         "type": "Polygon",

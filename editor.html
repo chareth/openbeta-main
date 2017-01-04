@@ -5,6 +5,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta charset="utf-8" />
     <meta name='viewport' content='width=device-width,initial-scale=1,user-scalable=yes' />
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-rc.1/leaflet.css" />
     <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.0.0-rc.1/MarkerCluster.css" />
     <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.0.0-rc.1/MarkerCluster.Default.css" />
@@ -50,6 +51,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
     <script src='http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.0.0-rc.1/leaflet.markercluster.js'></script>
     <script src='https://code.jquery.com/jquery-1.11.0.min.js'></script>
+    <script src='http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js'></script>
 
     <script src='lib/OverPassLayer.bundle.js'></script>
     <script src='lib/leaflet-draw/leaflet.draw.js'></script>
@@ -193,7 +195,8 @@
             var drawControl = new L.Control.Draw(options);
             map.addControl(drawControl);
 
-            map.on(L.Draw.Event.CREATED,
+            map.on(
+                L.Draw.Event.CREATED,
                 function (e) {
                     var type = e.layerType,
                     layer = e.layer;
@@ -202,7 +205,22 @@
                         layer.bindPopup('A popup!');
                     }
                 editableLayers.addLayer(layer);
-            });
+                }
+
+            );
+            map.on(
+                L.Draw.Event.DRAWSTOP,
+                function (e) {
+                    var type = e.layerType,
+                    layer = e.layer;
+
+                    console.log(layer)
+                    alert("Do you want to save " + layer);
+                //editableLayers.addLayer(layer);
+                }
+
+            );
+
             return editableLayers;
         } //prepareEditor
 
