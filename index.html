@@ -10,16 +10,82 @@
     <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.0.0-rc.1/MarkerCluster.Default.css" />
 	<link rel="stylesheet" type="text/css" href="lib/OverPassLayer.css" />
 
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.0/gh-fork-ribbon.min.css" />
+
 </head>
 
-<body>
-	<div id="map" style="width: 100%; min-height: 100vh; max-height: 100%;"></div>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.2/leaflet.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
+<body style="height: 100vh">
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-rc.1/leaflet.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.0.0/leaflet.ajax.js"></script>
 	<script src='http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.0.0-rc.1/leaflet.markercluster.js'></script>
 	<script src='https://code.jquery.com/jquery-1.11.0.min.js'></script>
 
-	<script src='lib/OverPassLayer.bundle.js'></script>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+	<nav class="navbar navbar-default">
+  	<div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+			<a href="#" class="navbar-left"><img src="https://avatars0.githubusercontent.com/u/19924141?v=3&s=200" style="width: 50px;"></a>
+      <a class="navbar-brand" href="#">OpenBeta</a>
+		</div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+
+      <form class="navbar-form navbar-left">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search" id="search-input">
+        </div>
+        <button type="submit" class="btn btn-default" onclick="search()">Submit</button>
+      </form>
+
+			<ul class="nav navbar-nav navbar-right">
+				<li > <a href="https://github.com/openbeta-io/openbeta-main"> Fork on Github!<img alt="" class="gh-mark" src="https://assets-cdn.github.com/images/modules/logos_page/GitHub-Mark.png" style="width:25px;"></a></li>
+				<li><a href="#">Forum</a></li>
+				<li><a href="#">About</a></li>
+			 	<li><a href="https://github.com/login/oauth/authorize">Login</a></li>
+		 </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+	</nav>
+
+
+	<div class="container-fluid" style="height: 100%">
+	  <div class="row" style="height: 100%">
+			<div class="col-md-5">
+				<div class="panel panel-default">
+					<div class="panel-heading"><h3 class="panel-title">Panel title</h3></div>
+				  <div class="panel-body">
+				    Panel content
+				  </div>
+				</div>
+				<h2></h2>
+			</div>
+			<div class="col-md-7 pull-right" style="height: 100%">
+				<div class="panel panel-default" style="height: 100%">
+				  <div class="panel-body" style="height: 100%">
+						<div id="map" style="height: 100%"></div>
+				  </div>
+				</div>
+			</div>
+		</div>
+	</div>
 
 	<script>
 		var url = 'https://api.github.com/repos/openbeta-io/geojson-poc/contents/data/yinyang-boundary.geojson';
@@ -78,40 +144,51 @@
 
 		var markerClusters = L.markerClusterGroup({ disableClusteringAtZoom: 18, spiderfyOnMaxZoom: false });
 
-		queryOverpass();
+		var calico_basin_routes = new L.GeoJSON.AJAX("data/calico-basin.geojson", {
+      		onEachFeature:
+      			function (feature, layer) {
+       				//layer.setIcon(L.mapbox.marker.icon({'marker-symbol': 'circle-stroked', 'marker-color':'59245f'}));
+        			layer.bindPopup(feature.properties.name);
+        			markerClusters.addLayer(layer);
+      		},
+      		pointToLayer:
+      			function (feature, latlng) {
+        			return L.circleMarker(latlng, geojsonMarkerOptions);
+    			}
+    	});
+		mymap.addLayer(markerClusters);
 
-       	mymap.addLayer(markerClusters);
+
+function search(){
+	var query = $("#search-input").val();
+	if (query != "") {
+		alert("Search for " + query);
+	}
+}
 
 
 
-       function makeMarkers(data) {
-       		var allMarkers = [];
-            for(var i = 0; i < data.elements.length; i++) {
-
-                var pos, popupContent, popup, marker,
-                e = data.elements[i];
-
-                //if ( e.id in this._ids ) {
-
-                  //  continue;
-                //}
-
-                //this._ids[e.id] = true;
-
-                if ( e.type === 'node' ) {
-
-                    pos = new L.LatLng(e.lat, e.lon);
-                } else {
-
-                    pos = new L.LatLng(e.center.lat, e.center.lon);
-                }
-                marker = L.circleMarker(pos, geojsonMarkerOptions);
-
-                popupContent = _getPoiPopupHTML(e.tags, e.id);
-                popup = L.popup().setContent( popupContent );
-				marker.bindPopup(popup);
-
-                allMarkers.push(marker);
+function load() {
+  // Fetch just the contents of a .geojson file from GitHub by passing
+  // `application/vnd.github.v3.raw` to the Accept header
+  // As with any other AJAX request, this technique is subject to the Same Origin Policy:
+  // http://en.wikipedia.org/wiki/Same_origin_policy the server delivering the request should support CORS.
+  $.ajax({
+    headers: {
+      'Accept': 'application/vnd.github.v3.raw'
+    },
+    xhrFields: {
+      withCredentials: false
+    },
+    dataType: 'json',
+    url: url,
+    success: function(geojson) {
+        L.geoJson(geojson, {
+			onEachFeature:
+				function onEachFeature(feature, layer) {
+    			if (feature.properties && feature.properties.name) {
+        			layer.bindPopup(feature.properties.name);
+    			}
 			}
 			markerClusters.addLayers(allMarkers);
        }
