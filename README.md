@@ -1,15 +1,19 @@
-Simple app illustrating [geojson](https://en.wikipedia.org/wiki/GeoJSON) data format and [Leaflet.js](http://leafletjs.com) mapping library.
+This web application demonstrates the following key concepts:
+- Route search
+- Integration with OpenStreetMap
+- User-editable boundaries
+- User authentication using GitHub OAuth2
 
-How to run (node.js required)
+#How to run (node.js required)
 ```
-# git clone https://github.com/openbeta-io/geojson-poc.git
-# cd geojson-poc
+# git clone https://github.com/openbeta-io/openbeta-main.git
+# cd openbeta-main
 # npm install
-# node app.js
+# node server.js
 ```
 View the app in your browser at http://localhost:8080 
 
-Live [demo!](http://discover-openbeta.44fs.preview.openshiftapps.com)
+Live [Demo](http://maps-openbeta.44fs.preview.openshiftapps.com/)
 
 Screenshot
 ![screen shot](geojson.png)
