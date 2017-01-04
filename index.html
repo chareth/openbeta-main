@@ -2,20 +2,24 @@
 <html>
 <head>
 	<title>OpenBeta</title>
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 	<meta charset="utf-8" />
-	<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+	<meta name='viewport' content='width=device-width,initial-scale=1,user-scalable=yes' />
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-rc.1/leaflet.css" />
     <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.0.0-rc.1/MarkerCluster.css" />
     <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.0.0-rc.1/MarkerCluster.Default.css" />
+	<link rel="stylesheet" type="text/css" href="lib/OverPassLayer.css" />
 
 </head>
 
 <body>
-	<div id="map" style="width: 800px; height: 600px"></div>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-rc.1/leaflet.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.0.0/leaflet.ajax.js"></script>
+	<div id="map" style="width: 100%; min-height: 100vh; max-height: 100%;"></div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.2/leaflet.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
 	<script src='http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.0.0-rc.1/leaflet.markercluster.js'></script>
 	<script src='https://code.jquery.com/jquery-1.11.0.min.js'></script>
+
+	<script src='lib/OverPassLayer.bundle.js'></script>
 
 	<script>
 		var url = 'https://api.github.com/repos/openbeta-io/geojson-poc/contents/data/yinyang-boundary.geojson';
@@ -40,24 +44,23 @@
 									}
 		);
 
-		var lightLayer = L.tileLayer(mapboxUrl, {
+		var osmLayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 										maxZoom: 22,
-										attribution: attribution,
+										attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
 										id: 'mapbox.light'
 									}
 		);
 
 		var mymap = L.map("map",{
-    			center: [36.15057,-115.42718],
-    			zoom: 10,
-    			layers: [outdoorsLayer, satelliteLayer, lightLayer]
+    			center: [36.1614211,-115.4500339],
+    			zoom: 12,
+    			layers: [outdoorsLayer, satelliteLayer, osmLayer]
 		});
 
 		var baseMaps = {
 		    "Satellite": satelliteLayer,
-		    "Light": lightLayer,
 		    "Topo": outdoorsLayer,
-
+		    'OpenStreetMap': osmLayer
 		};
 		L.control.layers(baseMaps).addTo(mymap);
 
@@ -65,7 +68,7 @@
 
 
 		var geojsonMarkerOptions = {
-		    radius: 4,
+		    radius: 5,
 		    fillColor: "#ff7800",
 		    color: "#000",
 		    weight: 1,
@@ -75,54 +78,90 @@
 
 		var markerClusters = L.markerClusterGroup({ disableClusteringAtZoom: 18, spiderfyOnMaxZoom: false });
 
-		var calico_basin_routes = new L.GeoJSON.AJAX("data/calico-basin.geojson", {
-      		onEachFeature:
-      			function (feature, layer) {
-       				//layer.setIcon(L.mapbox.marker.icon({'marker-symbol': 'circle-stroked', 'marker-color':'59245f'}));
-        			layer.bindPopup(feature.properties.name);
-        			markerClusters.addLayer(layer);
-      		},
-      		pointToLayer:
-      			function (feature, latlng) {
-        			return L.circleMarker(latlng, geojsonMarkerOptions);
-    			}
-    	});
-		mymap.addLayer(markerClusters);
+		queryOverpass();
+
+       	mymap.addLayer(markerClusters);
 
 
 
+       function makeMarkers(data) {
+       		var allMarkers = [];
+            for(var i = 0; i < data.elements.length; i++) {
 
-function load() {
-  // Fetch just the contents of a .geojson file from GitHub by passing
-  // `application/vnd.github.v3.raw` to the Accept header
-  // As with any other AJAX request, this technique is subject to the Same Origin Policy:
-  // http://en.wikipedia.org/wiki/Same_origin_policy the server delivering the request should support CORS.
-  $.ajax({
-    headers: {
-      'Accept': 'application/vnd.github.v3.raw'
-    },
-    xhrFields: {
-      withCredentials: false
-    },
-    dataType: 'json',
-    url: url,
-    success: function(geojson) {
-        L.geoJson(geojson, {
-			onEachFeature:
-				function onEachFeature(feature, layer) {
-    			if (feature.properties && feature.properties.name) {
-        			layer.bindPopup(feature.properties.name);
-    			}
+                var pos, popupContent, popup, marker,
+                e = data.elements[i];
+
+                //if ( e.id in this._ids ) {
+
+                  //  continue;
+                //}
+
+                //this._ids[e.id] = true;
+
+                if ( e.type === 'node' ) {
+
+                    pos = new L.LatLng(e.lat, e.lon);
+                } else {
+
+                    pos = new L.LatLng(e.center.lat, e.center.lon);
+                }
+                marker = L.circleMarker(pos, geojsonMarkerOptions);
+
+                popupContent = _getPoiPopupHTML(e.tags, e.id);
+                popup = L.popup().setContent( popupContent );
+				marker.bindPopup(popup);
+
+                allMarkers.push(marker);
 			}
+			markerClusters.addLayers(allMarkers);
+       }
+
+
+   function queryOverpass() {
+        var //bbString = formatBBox(),
+            overpassQuery = encodeURIComponent('node(around:50000,36.14893,-115.42279)["sport"="climbing"] ;out body qt;'),
+            overpassURL = "http://overpass-api.de/api/interpreter?data=[out:json];" + overpassQuery;
+//        console.log("Bounding Box: " + bbString);
+//        console.log("Overpass Query URL=" + overpassURL);
+        $.ajax({
+            url : overpassURL,
+            type : 'GET',
+            crossDomain : true,
+            success : function (data) {
+            	console.log(data)
+                makeMarkers(data);
+            },
+            error : function (request, status, errorThrown) {
+                window.alert("Overpass Query failed with error: \n" + errorThrown);
+            }
+        });
+	}
+
+	function _getPoiPopupHTML(tags, id) {
+
+        var row,
+        link = document.createElement('a'),
+        table = document.createElement('table'),
+        div = document.createElement('div');
+
+        link.href = 'http://www.openstreetmap.org/edit?editor=id&node=' + id;
+        link.appendChild(document.createTextNode('Edit this entry in iD'));
+
+        table.style.borderSpacing = '10px';
+        table.style.borderCollapse = 'separate';
+
+        for (var key in tags){
+
+            row = table.insertRow(0);
+            row.insertCell(0).appendChild(document.createTextNode(key));
+            row.insertCell(1).appendChild(document.createTextNode(tags[key]));
         }
 
-        ).addTo(mymap);
-    }
-  });
+        div.appendChild(link);
+        div.appendChild(table);
+
+        return div;
 }
-
-$(load);
-
 
 </script>
 </body>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>OpenBeta</title>
+	<meta charset="utf-8" />
+	<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-rc.1/leaflet.css" />
+    <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.0.0-rc.1/MarkerCluster.css" />
+    <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.0.0-rc.1/MarkerCluster.Default.css" />
+
+</head>
+
+<body>
+	<div id="map" style="width: 800px; height: 600px"></div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.2/leaflet.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
+	<script src='http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.0.0-rc.1/leaflet.markercluster.js'></script>
+	<script src='https://code.jquery.com/jquery-1.11.0.min.js'></script>
+
+	<script>
+		var url = 'https://api.github.com/repos/openbeta-io/geojson-poc/contents/data/yinyang-boundary.geojson';
+
+		var mapboxUrl = "https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoidmlldGdvZXN3ZXN0IiwiYSI6ImNpbzljZnVwNTAzM2x2d2x6OTRpb3JjMmQifQ.rcxOnDEeY4McXKDamMLOlA";
+
+		var attribution ='Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+				'Imagery © <a href="http://mapbox.com">Mapbox</a>';
+
+		var outdoorsLayer = L.tileLayer(mapboxUrl, {
+										maxZoom: 22,
+										attribution: attribution,
+										id: 'mapbox.outdoors'
+									}
+		);
+
+		var satelliteLayer = L.tileLayer(mapboxUrl, {
+										maxZoom: 22,
+										attribution: attribution,
+										id: 'mapbox.satellite'
+									}
+		);
+
+		var lightLayer = L.tileLayer(mapboxUrl, {
+										maxZoom: 22,
+										attribution: attribution,
+										id: 'mapbox.light'
+									}
+		);
+
+		var mymap = L.map("map",{
+    			center: [36.1614211,-115.4500339],
+    			zoom: 10,
+    			layers: [outdoorsLayer, satelliteLayer, lightLayer]
+		});
+
+		var baseMaps = {
+		    "Satellite": satelliteLayer,
+		    "Light": lightLayer,
+		    "Topo": outdoorsLayer,
+
+		};
+		L.control.layers(baseMaps).addTo(mymap);
+
+		L.control.scale().addTo(mymap);
+
+
+		var geojsonMarkerOptions = {
+		    radius: 4,
+		    fillColor: "#ff7800",
+		    color: "#000",
+		    weight: 1,
+		    opacity: 1,
+		    fillOpacity: 0.8
+		};
+
+		var markerClusters = L.markerClusterGroup({ disableClusteringAtZoom: 18, spiderfyOnMaxZoom: false });
+
+		var openbeta_api = 'http://localhost:5000/search?loc=-115.4500339%2C36.1614211&r=2'
+		var calico_basin_routes = new L.GeoJSON.AJAX(openbeta_api, {
+      		onEachFeature:
+      			function (feature, layer) {
+       				//layer.setIcon(L.mapbox.marker.icon({'marker-symbol': 'circle-stroked', 'marker-color':'59245f'}));
+        			layer.bindPopup(feature.properties.name);
+        			markerClusters.addLayer(layer);
+      		},
+      		pointToLayer:
+      			function (feature, latlng) {
+        			return L.circleMarker(latlng, geojsonMarkerOptions);
+    			}
+    	});
+		mymap.addLayer(markerClusters);
+
+
+
+
+function load() {
+  // Fetch just the contents of a .geojson file from GitHub by passing
+  // `application/vnd.github.v3.raw` to the Accept header
+  // As with any other AJAX request, this technique is subject to the Same Origin Policy:
+  // http://en.wikipedia.org/wiki/Same_origin_policy the server delivering the request should support CORS.
+  $.ajax({
+    headers: {
+      'Accept': 'application/vnd.github.v3.raw'
+    },
+    xhrFields: {
+      withCredentials: false
+    },
+    dataType: 'json',
+    url: url,
+    success: function(geojson) {
+        L.geoJson(geojson, {
+			onEachFeature:
+				function onEachFeature(feature, layer) {
+    			if (feature.properties && feature.properties.name) {
+        			layer.bindPopup(feature.properties.name);
+    			}
+			}
+        }
+
+        ).addTo(mymap);
+    }
+  });
+}
+
+$(load);
+
+
+</script>
+</body>
+</html>
