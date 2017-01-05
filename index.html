@@ -170,8 +170,7 @@ function search(){
         var //bbString = formatBBox(),
             overpassQuery = encodeURIComponent('node(around:50000,36.14893,-115.42279)["sport"="climbing"] ;out body qt;'),
             overpassURL = "http://overpass-api.de/api/interpreter?data=[out:json];" + overpassQuery;
-//        console.log("Bounding Box: " + bbString);
-//        console.log("Overpass Query URL=" + overpassURL);
+
         $.ajax({
             url : overpassURL,
             type : 'GET',
